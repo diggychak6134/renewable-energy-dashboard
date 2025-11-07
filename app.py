@@ -40,3 +40,4 @@ st.pyplot(fig)
 # Footer
 st.markdown("---")
 st.caption("Developed by Diganto Chakraborty – Renewable Energy Simulation Project")
+
