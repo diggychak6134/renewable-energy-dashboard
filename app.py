@@ -13,7 +13,7 @@ It models real-world variation in production due to factors like weather, season
 
 # Select energy source
 energy_sources = ["Solar", "Wind", "Hydro", "Biomass"]
-selected_source = st.selectbox("Select Energy Source", energy_sources)
+selected_source = st.selectbox("Select Energy Source", energy_sources, key="source_select")
 
 # Generate semi-realistic data
 np.random.seed(42)
