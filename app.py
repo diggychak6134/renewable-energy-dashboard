@@ -1,92 +1,42 @@
 import streamlit as st
-import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
+import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="Renewable Energy Dashboard", layout="wide")
-st.title("Renewable Energy Dashboard")
+st.set_page_config(page_title="Renewable Energy Comparison", layout="wide")
 
-st.write("""
-A mini project dashboard showing **simulated renewable energy data**.
-It models real-world variation in production due to factors like weather, season, and maintenance.
-""")
+st.title("🌍 Renewable Energy Share: EU vs India (2014–2023)")
+st.write("Data sources: Eurostat (EU) and MNRE/IEA (India)")
 
-# Select energy source
-energy_sources = ["Solar", "Wind", "Hydro", "Biomass"]
-selected_source = st.selectbox("Select Energy Source", energy_sources, key="source_select")
+# Load the data
+eu_data = pd.read_csv("eu_data.csv")
+india_data = pd.read_csv("india_data.csv")
 
-# Generate semi-realistic data
-np.random.seed(42)
-years = np.arange(2015, 2025)
-base = {
-    "Solar": 60,
-    "Wind": 50,
-    "Hydro": 40,
-    "Biomass": 25
-}[selected_source]
+# Dropdown for selecting countries
+option = st.selectbox("Select country or comparison", ["EU", "India", "Both"])
 
-# Add fluctuations
-trend = base + np.cumsum(np.random.normal(0.8, 2.5, len(years)))
-trend = np.maximum(trend, 0)  # ensure no negative values
+fig, ax = plt.subplots(figsize=(10, 6))
 
-df = pd.DataFrame({"Year": years, "Production (MW)": trend})
+if option == "EU":
+    ax.plot(eu_data["Year"], eu_data["Renewable Share (%)"], marker='o', label="EU", color="green")
+    st.subheader("🇪🇺 European Union Renewable Energy Trend")
 
-# Plot
-fig, ax = plt.subplots(figsize=(7, 4))
-ax.plot(df["Year"], df["Production (MW)"], marker='o', linestyle='-', color='tab:green')
-ax.set_title(f"{selected_source} Energy Production (2015–2024)", fontsize=13)
+elif option == "India":
+    ax.plot(india_data["Year"], india_data["Renewable Share (%)"], marker='o', label="India", color="orange")
+    st.subheader("🇮🇳 India Renewable Energy Trend")
+
+else:
+    ax.plot(eu_data["Year"], eu_data["Renewable Share (%)"], marker='o', label="EU", color="green")
+    ax.plot(india_data["Year"], india_data["Renewable Share (%)"], marker='s', label="India", color="orange")
+    st.subheader("🌏 Comparison: EU vs India")
+
 ax.set_xlabel("Year")
-ax.set_ylabel("Production (MW)")
-ax.grid(True, linestyle="--", alpha=0.6)
+ax.set_ylabel("Renewable Energy Share (%)")
+ax.set_title("Growth of Renewable Energy (2014–2023)")
+ax.legend()
+ax.grid(True)
 
 st.pyplot(fig)
 
-# Add some insights
-growth = ((df["Production (MW)"].iloc[-1] - df["Production (MW)"].iloc[0]) / df["Production (MW)"].iloc[0]) * 100
-st.metric(label=f"{selected_source} Growth (2015–2024)", value=f"{growth:.2f}%")
-import streamlit as st
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
+st.markdown("---")
+st.write("📊 *This dashboard compares the growth of renewable energy in the EU and India using verified public datasets (2014–2023).*")
 
-st.set_page_config(page_title="Renewable Energy Dashboard", layout="wide")
-st.title("Renewable Energy Dashboard")
-
-st.write("""
-A mini project dashboard showing **simulated renewable energy data**.
-It models real-world variation in production due to factors like weather, season, and maintenance.
-""")
-
-# Select energy source
-energy_sources = ["Solar", "Wind", "Hydro", "Biomass"]
-selected_source = st.selectbox("Select Energy Source", energy_sources)
-
-# Generate semi-realistic data
-np.random.seed(42)
-years = np.arange(2015, 2025)
-base = {
-    "Solar": 60,
-    "Wind": 50,
-    "Hydro": 40,
-    "Biomass": 25
-}[selected_source]
-
-# Add fluctuations
-trend = base + np.cumsum(np.random.normal(0.8, 2.5, len(years)))
-trend = np.maximum(trend, 0)  # ensure no negative values
-
-df = pd.DataFrame({"Year": years, "Production (MW)": trend})
-
-# Plot
-fig, ax = plt.subplots(figsize=(7, 4))
-ax.plot(df["Year"], df["Production (MW)"], marker='o', linestyle='-', color='tab:green')
-ax.set_title(f"{selected_source} Energy Production (2015–2024)", fontsize=13)
-ax.set_xlabel("Year")
-ax.set_ylabel("Production (MW)")
-ax.grid(True, linestyle="--", alpha=0.6)
-
-st.pyplot(fig)
-
-# Add some insights
-growth = ((df["Production (MW)"].iloc[-1] - df["Production (MW)"].iloc[0]) / df["Production (MW)"].iloc[0]) * 100
-st.metric(label=f"{selected_source} Growth (2015–2024)", value=f"{growth:.2f}%")
