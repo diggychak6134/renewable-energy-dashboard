@@ -40,3 +40,4 @@ st.pyplot(fig)
 st.markdown("---")
 st.write("📊 *This dashboard compares the growth of renewable energy in the EU and India using verified public datasets (2014–2023).*")
 
+
