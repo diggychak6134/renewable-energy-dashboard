@@ -88,12 +88,12 @@ ax.legend()
 ax.grid(True, linestyle="--", alpha=0.5)
 st.pyplot(fig)
 
-# -------------------- MAP SECTION --------------------
+# -------------------- MAP SECTION (with Potential + Deployment Index) --------------------
 if show_map:
-    st.subheader("🗺️ Renewable Energy Clusters and Potential Sites")
-    st.caption("Demo dataset – approximate coordinates for renewable clusters")
+    st.subheader("🗺️ Renewable Energy Strength Map: Potential vs Deployment")
+    st.caption("Demo dataset combining natural renewable potential, deployment index, and overall composite score.")
 
-    # Renewable cluster data
+    # Base dataset
     data = pd.DataFrame({
         "lat": [51.1657, 40.4637, 28.6139, 22.7196, 19.0760, 55.3781, 37.9838],
         "lon": [10.4515, -3.7492, 77.2090, 75.8577, 72.8777, -3.4360, 23.7275],
@@ -101,35 +101,52 @@ if show_map:
             "Germany", "Spain", "India (North)", "India (Central)",
             "India (West)", "UK", "Greece"
         ],
-        "Type": ["Solar", "Wind", "Solar", "Wind", "Offshore Wind", "Wind", "Solar"],
-        "Potential Score": [8.7, 9.1, 8.5, 8.2, 7.9, 8.9, 9.0]
+        "Type": ["Wind+Solar", "Solar", "Solar", "Wind", "Solar+Wind", "Offshore Wind", "Solar"],
+        # Natural potential: solar/wind resource quality
+        "Potential Score": [8.8, 9.5, 8.6, 8.3, 8.1, 9.2, 9.0],
+        # Deployment index: infrastructure, tech, grid integration
+        "Deployment Index": [9.8, 7.5, 7.8, 7.2, 7.5, 9.0, 6.8]
     })
 
-    # Normalize and color-code based on type
-    color_map = {
-        "Solar": [255, 165, 0],       # orange
-        "Wind": [30, 144, 255],       # blue
-        "Offshore Wind": [0, 255, 127]  # green
-    }
+    # Composite score: weighted 60% deployment, 40% potential
+    data["Composite Score"] = (data["Deployment Index"] * 0.6) + (data["Potential Score"] * 0.4)
 
-    data["color"] = data["Type"].map(color_map)
+    # View selector
+    view_option = st.radio(
+        "Select score to visualize:",
+        ["Natural Potential", "Deployment Strength", "Composite Score"],
+        horizontal=True
+    )
 
-    # Use pydeck without custom Mapbox (OpenStreetMap tiles)
+    # Select which column to show
+    if view_option == "Natural Potential":
+        score_column = "Potential Score"
+        color = [255, 165, 0]  # orange
+    elif view_option == "Deployment Strength":
+        score_column = "Deployment Index"
+        color = [0, 200, 255]  # blue
+    else:
+        score_column = "Composite Score"
+        color = [0, 255, 127]  # green
+
+    # Radius scaled for visibility
+    data["Radius"] = data[score_column] * 40000
+
     import pydeck as pdk
     layer = pdk.Layer(
         "ScatterplotLayer",
         data=data,
         get_position=["lon", "lat"],
-        get_color="color",
-        get_radius=50000,
+        get_color=color,
+        get_radius="Radius",
         pickable=True,
+        auto_highlight=True,
     )
 
     view_state = pdk.ViewState(latitude=30, longitude=25, zoom=2.5, pitch=0)
+    tooltip = {"text": "{Region}\nType: {Type}\n" + score_column + ": {" + score_column + "}"}
 
-    tooltip = {"text": "{Region}\nType: {Type}\nPotential: {Potential Score}"}
-
-    # This uses OpenStreetMap (no API key required)
+    # OpenStreetMap base
     st.pydeck_chart(pdk.Deck(
         map_style=None,
         layers=[layer],
@@ -137,7 +154,8 @@ if show_map:
         tooltip=tooltip
     ))
 
-    st.markdown("*Each colored marker represents a renewable cluster or potential site.*")
+    # Legend
+    st.markdown(f"**Legend:** Colored circles indicate {view_option.lower()} (size = higher score).")
     st.markdown("---")
 
 
