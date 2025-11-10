@@ -89,11 +89,11 @@ ax.grid(True, linestyle="--", alpha=0.5)
 st.pyplot(fig)
 
 # -------------------- MAP SECTION --------------------
-# -------------------- MAP SECTION --------------------
 if show_map:
     st.subheader("🗺️ Renewable Energy Clusters and Potential Sites")
     st.caption("Demo dataset – approximate coordinates for renewable clusters")
 
+    # Renewable cluster data
     data = pd.DataFrame({
         "lat": [51.1657, 40.4637, 28.6139, 22.7196, 19.0760, 55.3781, 37.9838],
         "lon": [10.4515, -3.7492, 77.2090, 75.8577, 72.8777, -3.4360, 23.7275],
@@ -105,37 +105,41 @@ if show_map:
         "Potential Score": [8.7, 9.1, 8.5, 8.2, 7.9, 8.9, 9.0]
     })
 
-    # Normalize radius for better visibility
-    data["Radius"] = data["Potential Score"] * 30000
+    # Normalize and color-code based on type
+    color_map = {
+        "Solar": [255, 165, 0],       # orange
+        "Wind": [30, 144, 255],       # blue
+        "Offshore Wind": [0, 255, 127]  # green
+    }
 
+    data["color"] = data["Type"].map(color_map)
+
+    # Use pydeck without custom Mapbox (OpenStreetMap tiles)
+    import pydeck as pdk
     layer = pdk.Layer(
         "ScatterplotLayer",
         data=data,
         get_position=["lon", "lat"],
-        get_color="[255, 100, 30, 180]",
-        get_radius="Radius",
+        get_color="color",
+        get_radius=50000,
         pickable=True,
-        auto_highlight=True
     )
 
-    # Adjust map view to center over EU + India
-    view_state = pdk.ViewState(
-        latitude=30,
-        longitude=30,
-        zoom=2.5,
-        pitch=0
-    )
+    view_state = pdk.ViewState(latitude=30, longitude=25, zoom=2.5, pitch=0)
 
     tooltip = {"text": "{Region}\nType: {Type}\nPotential: {Potential Score}"}
 
+    # This uses OpenStreetMap (no API key required)
     st.pydeck_chart(pdk.Deck(
+        map_style=None,
         layers=[layer],
         initial_view_state=view_state,
-        map_style="mapbox://styles/mapbox/light-v9",
         tooltip=tooltip
     ))
 
+    st.markdown("*Each colored marker represents a renewable cluster or potential site.*")
     st.markdown("---")
+
 
 
 # -------------------- COST & EFFICIENCY SIMULATOR --------------------
