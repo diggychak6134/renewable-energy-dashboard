@@ -16,18 +16,28 @@ st.caption("Data: Eurostat (EU), MNRE/IEA (India) • Dashboard by Diganto Chakr
 st.markdown("---")
 
 # -------------------- LOAD DATA --------------------
-@st.cache_data
-def load_data():
-    eu = pd.read_csv("eu_data.csv")
-    india = pd.read_csv("india_data.csv")
-    return eu, india
+import os
 
-eu_data, india_data = load_data()
+@st.cache_data
+def load_all_data():
+    data_dir = "data"
+    data_dict = {}
+    for file in os.listdir(data_dir):
+        if file.endswith(".csv"):
+            country = file.replace(".csv", "").upper()
+            df = pd.read_csv(os.path.join(data_dir, file))
+            data_dict[country] = df
+    return data_dict
+
+# Load all country data automatically
+data_dict = load_all_data()
+countries = list(data_dict.keys())
+
 
 # -------------------- SELECTION --------------------
 col1, col2 = st.columns(2)
 with col1:
-    region = st.selectbox("Select region", ["EU", "India", "Both"])
+    region = st.selectbox("Select region", countries + ["ALL"])
 with col2:
     show_map = st.checkbox("Show Renewable Energy Map", value=True)
 
@@ -95,15 +105,15 @@ if show_map:
 
     # Base dataset
     data = pd.DataFrame({
-        "lat": [51.1657, 40.4637, 28.6139, 22.7196, 19.0760, 55.3781, 37.9838],
-        "lon": [10.4515, -3.7492, 77.2090, 75.8577, 72.8777, -3.4360, 23.7275],
+        "lat": [51.1657, 40.4637, 28.6139, 22.7196, 19.0760, 55.3781, 37.9838, 37.0902],
+        "lon": [10.4515, -3.7492, 77.2090, 75.8577, 72.8777, -3.4360, 23.7275, -95.7129],
         "Region": [
             "Germany", "Spain", "India (North)", "India (Central)",
-            "India (West)", "UK", "Greece"
+            "India (West)", "UK", "Greece", "USA"
         ],
         "Type": ["Wind+Solar", "Solar", "Solar", "Wind", "Solar+Wind", "Offshore Wind", "Solar"],
         # Natural potential: solar/wind resource quality
-        "Potential Score": [8.8, 9.5, 8.6, 8.3, 8.1, 9.2, 9.0],
+        "Potential Score": [8.8, 9.5, 8.6, 8.3, 8.1, 9.2, 9.0,],
         # Deployment index: infrastructure, tech, grid integration
         "Deployment Index": [9.8, 7.5, 7.8, 7.2, 7.5, 9.0, 6.8]
     })
