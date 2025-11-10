@@ -89,31 +89,54 @@ ax.grid(True, linestyle="--", alpha=0.5)
 st.pyplot(fig)
 
 # -------------------- MAP SECTION --------------------
+# -------------------- MAP SECTION --------------------
 if show_map:
     st.subheader("🗺️ Renewable Energy Clusters and Potential Sites")
     st.caption("Demo dataset – approximate coordinates for renewable clusters")
 
     data = pd.DataFrame({
-        "lat": [48.5, 41.3, 28.5, 22.3, 19.1, 51.0, 37.9],
-        "lon": [10.0, 2.1, 77.2, 70.8, 72.8, 0.1, 23.7],
-        "Region": ["Germany", "Spain", "India (North)", "India (West)", "India (West Coast)", "UK", "Greece"],
-        "Type": ["Solar", "Solar", "Solar", "Wind", "Wind", "Offshore Wind", "Solar"],
+        "lat": [51.1657, 40.4637, 28.6139, 22.7196, 19.0760, 55.3781, 37.9838],
+        "lon": [10.4515, -3.7492, 77.2090, 75.8577, 72.8777, -3.4360, 23.7275],
+        "Region": [
+            "Germany", "Spain", "India (North)", "India (Central)",
+            "India (West)", "UK", "Greece"
+        ],
+        "Type": ["Solar", "Wind", "Solar", "Wind", "Offshore Wind", "Wind", "Solar"],
         "Potential Score": [8.7, 9.1, 8.5, 8.2, 7.9, 8.9, 9.0]
     })
+
+    # Normalize radius for better visibility
+    data["Radius"] = data["Potential Score"] * 30000
 
     layer = pdk.Layer(
         "ScatterplotLayer",
         data=data,
         get_position=["lon", "lat"],
-        get_color="[200, 30, 0, 160]",
-        get_radius="Potential Score * 20000",
-        pickable=True
+        get_color="[255, 100, 30, 180]",
+        get_radius="Radius",
+        pickable=True,
+        auto_highlight=True
     )
 
-    view_state = pdk.ViewState(latitude=30, longitude=40, zoom=2)
-    st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=view_state, tooltip={"text": "{Region}\nType: {Type}\nScore: {Potential Score}"}))
+    # Adjust map view to center over EU + India
+    view_state = pdk.ViewState(
+        latitude=30,
+        longitude=30,
+        zoom=2.5,
+        pitch=0
+    )
+
+    tooltip = {"text": "{Region}\nType: {Type}\nPotential: {Potential Score}"}
+
+    st.pydeck_chart(pdk.Deck(
+        layers=[layer],
+        initial_view_state=view_state,
+        map_style="mapbox://styles/mapbox/light-v9",
+        tooltip=tooltip
+    ))
 
     st.markdown("---")
+
 
 # -------------------- COST & EFFICIENCY SIMULATOR --------------------
 st.subheader("💰 Energy Cost & Efficiency Simulation")
