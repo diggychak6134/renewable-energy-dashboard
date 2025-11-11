@@ -192,7 +192,7 @@ cor_df = pd.DataFrame({
     "Renewable Share (%)": [data_dict["EU"]["Renewable Share (%)"].iloc[-1],
                             data_dict["INDIA"]["Renewable Share (%)"].iloc[-1],
                             data_dict["US"]["Renewable Share (%)"].iloc[-1]],
-    "CO₂ Emissions (Mt)": [2400, 2600, 4800]  # example values for demonstration
+    "CO₂ Emissions (Mt)": [2400, 2800, 4800]  # example values for demonstration
 })
 fig4, ax4 = plt.subplots()
 ax4.scatter(cor_df["Renewable Share (%)"], cor_df["CO₂ Emissions (Mt)"])
