@@ -117,18 +117,31 @@ st.markdown("---")
 
 # -------------------- ENERGY MIX PIE CHART --------------------
 st.subheader("⚡ Renewable Energy Mix (2023)")
+
 mix_map = {
     "EU": {"Solar": 35, "Wind": 40, "Hydro": 20, "Biomass": 5},
     "INDIA": {"Solar": 50, "Wind": 30, "Hydro": 18, "Biomass": 2},
     "US": {"Solar": 30, "Wind": 45, "Hydro": 20, "Geothermal": 5}
 }
+
 if region in mix_map:
-    fig3, ax3 = plt.subplots()
     mix = mix_map[region]
+elif region == "ALL":
+    # Compute average of all countries
+    all_sources = {}
+    for m in mix_map.values():
+        for k, v in m.items():
+            all_sources[k] = all_sources.get(k, 0) + v
+    mix = {k: v / len(mix_map) for k, v in all_sources.items()}
+else:
+    mix = None
+
+if mix:
+    fig3, ax3 = plt.subplots()
     ax3.pie(mix.values(), labels=mix.keys(), autopct='%1.1f%%', startangle=90)
     ax3.set_title(f"{region} Renewable Source Breakdown (2023)")
     st.pyplot(fig3)
-st.markdown("---")
+
 
 # -------------------- CO₂ INTENSITY COMPARISON --------------------
 st.subheader("🌫️ CO₂ Intensity of Electricity Generation")
