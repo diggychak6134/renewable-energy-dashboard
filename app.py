@@ -1,5 +1,5 @@
 # -----------------------------------------------------------
-# 🌍 Renewable Energy Transition Dashboard – EU, India & USA
+# 🌍 Renewable Energy Transition Dashboard – Full Version
 # By Diganto Chakraborty
 # -----------------------------------------------------------
 
@@ -15,16 +15,20 @@ st.title("🌞 Renewable Energy Transition Dashboard: EU vs India vs USA (2014�
 st.caption("Data: Eurostat (EU), MNRE/IEA (India), EIA (US) • Dashboard by Diganto Chakraborty")
 st.markdown("---")
 
-# -------------------- LOAD DATA (ensure US included) --------------------
+# -------------------- THEME TOGGLE --------------------
+dark_mode = st.sidebar.toggle("🌙 Dark Mode", value=False)
+plt.style.use("dark_background" if dark_mode else "default")
+
+# -------------------- LOAD DATA --------------------
 @st.cache_data
 def load_data():
     eu = pd.read_csv("eu_data.csv")
     india = pd.read_csv("india_data.csv")
-    us = pd.read_csv("us_data.csv")   # <-- must exist in repo root
+    us = pd.read_csv("us_data.csv")
     return {"EU": eu, "INDIA": india, "US": us}
 
 data_dict = load_data()
-countries = list(data_dict.keys())  # ['EU','INDIA','US']
+countries = list(data_dict.keys())
 
 # -------------------- REGION SELECTION --------------------
 col1, col2 = st.columns(2)
@@ -32,7 +36,6 @@ with col1:
     region = st.selectbox("Select region", countries + ["ALL"])
 with col2:
     show_map = st.checkbox("Show Renewable Energy Map", value=True)
-
 st.markdown("---")
 
 # -------------------- METRIC CALCULATION --------------------
@@ -56,11 +59,11 @@ if region != "ALL":
     m4.metric("CO₂ Saved (Mt est.)", f"{co2_saved:.2f}")
     st.markdown("---")
 
-# -------------------- GOAL TRACKER --------------------
+# -------------------- GOAL SLIDER --------------------
 st.subheader("🎯 Renewable Goal Progress")
 goal_map = {"EU": 40, "INDIA": 30, "US": 35}
 if region != "ALL":
-    goal = goal_map.get(region, 40)
+    goal = st.sidebar.slider(f"Set {region}'s 2030 renewable target (%)", 20, 60, goal_map.get(region, 40))
     current = data_dict[region]["Renewable Share (%)"].iloc[-1]
     progress = min(current / goal, 1.0)
     st.write(f"**{region}** current renewable share: {current:.1f}% (Goal: {goal}%)")
@@ -112,86 +115,71 @@ ax2.grid(True, linestyle="--", alpha=0.5)
 st.pyplot(fig2)
 st.markdown("---")
 
-# -------------------- MAP SECTION (includes USA) --------------------
-if show_map:
-    st.subheader("🗺️ Renewable Energy Strength Map: Potential vs Deployment")
-    st.caption("Interactive comparison of potential, deployment, and composite score.")
-
-    data = pd.DataFrame({
-        "lat": [51.1657, 40.4637, 28.6139, 22.7196, 19.0760, 55.3781, 37.9838, 37.0902],
-        "lon": [10.4515, -3.7492, 77.2090, 75.8577, 72.8777, -3.4360, 23.7275, -95.7129],
-        "Region": [
-            "Germany", "Spain", "India (North)", "India (Central)",
-            "India (West)", "UK", "Greece", "USA"
-        ],
-        "Type": ["Wind+Solar", "Solar", "Solar", "Wind", "Solar+Wind", "Offshore Wind", "Solar", "Wind+Solar"],
-        "Potential Score": [8.8, 9.5, 8.6, 8.3, 8.1, 9.2, 9.0, 9.5],
-        "Deployment Index": [9.8, 7.5, 7.8, 7.2, 7.5, 9.0, 6.8, 9.2]
-    })
-
-    weight = st.slider("⚙️ Adjust Deployment Weight (Composite Calculation)", 0.0, 1.0, 0.6)
-    data["Composite Score"] = (data["Deployment Index"] * weight) + (data["Potential Score"] * (1 - weight))
-
-    view_option = st.radio("Select score to visualize:", ["Natural Potential", "Deployment Strength", "Composite Score"], horizontal=True)
-    if view_option == "Natural Potential":
-        score_column = "Potential Score"; color = [255,165,0]
-    elif view_option == "Deployment Strength":
-        score_column = "Deployment Index"; color = [0,200,255]
-    else:
-        score_column = "Composite Score"; color = [0,255,127]
-
-    data["Radius"] = data[score_column] * 40000
-    layer = pdk.Layer("ScatterplotLayer", data=data, get_position=["lon","lat"], get_color=color, get_radius="Radius", pickable=True, auto_highlight=True)
-    view_state = pdk.ViewState(latitude=30, longitude=10, zoom=2.5, pitch=0)
-    tooltip = {"text": "{Region}\nType: {Type}\n" + score_column + ": {" + score_column + "}"}
-    st.pydeck_chart(pdk.Deck(map_style=None, layers=[layer], initial_view_state=view_state, tooltip=tooltip))
-    st.markdown(f"**Legend:** Colored circles indicate {view_option.lower()} (size = higher score).")
-    st.markdown("---")
-
-# -------------------- COST & EFFICIENCY SIMULATOR --------------------
-st.subheader("💰 Energy Cost & Efficiency Simulation")
-col1, col2, col3 = st.columns(3)
-with col1:
-    capacity = st.number_input("Installed capacity (MW)", 100, 10000, 500)
-with col2:
-    efficiency = st.slider("System efficiency (%)", 10, 100, 80)
-with col3:
-    cost_per_mw = st.number_input("Installation cost per MW (Million $)", 0.1, 10.0, 1.5)
-
-energy_output_twh = capacity * (efficiency / 100) * 8760 / 1e6
-total_cost = capacity * cost_per_mw
-co2_saved_sim = energy_output_twh * CO2_SAVED_PER_TWH
-
-c1, c2, c3 = st.columns(3)
-c1.metric("Annual Energy Output", f"{energy_output_twh:.2f} TWh")
-c2.metric("Total Installation Cost", f"${total_cost:.1f} M")
-c3.metric("CO₂ Saved (est.)", f"{co2_saved_sim:.2f} Mt")
+# -------------------- ENERGY MIX PIE CHART --------------------
+st.subheader("⚡ Renewable Energy Mix (2023)")
+mix_map = {
+    "EU": {"Solar": 35, "Wind": 40, "Hydro": 20, "Biomass": 5},
+    "INDIA": {"Solar": 50, "Wind": 30, "Hydro": 18, "Biomass": 2},
+    "US": {"Solar": 30, "Wind": 45, "Hydro": 20, "Geothermal": 5}
+}
+if region in mix_map:
+    fig3, ax3 = plt.subplots()
+    mix = mix_map[region]
+    ax3.pie(mix.values(), labels=mix.keys(), autopct='%1.1f%%', startangle=90)
+    ax3.set_title(f"{region} Renewable Source Breakdown (2023)")
+    st.pyplot(fig3)
 st.markdown("---")
 
-# -------------------- INSIGHTS --------------------
-st.subheader("📈 Insights Summary")
-if region == "EU":
-    st.write("""
-    - The EU achieved **~23.5% renewable share** in 2023, showing steady growth under strong policy frameworks.
-    - Forecast suggests reaching **~41% by 2030**, consistent with EU Green Deal goals.
-    """)
-elif region == "INDIA":
-    st.write("""
-    - India reached **~22.4% renewable share** in 2023, led by solar and wind projects.
-    - Forecasts show crossing **~30% by 2030** with continued infrastructure investment.
-    """)
-elif region == "US":
-    st.write("""
-    - The United States reached **~24% renewable share** in 2023, driven by wind and solar expansion.
-    - Forecasts show potential to exceed **35% by 2030**, especially with federal incentives and private innovation.
-    """)
-else:
-    st.write("""
-    - EU leads in policy and deployment, India excels in growth speed, and the US balances innovation and scale.
-    - Global transition is accelerating with strong contributions from all three regions.
-    """)
-st.caption("© 2025 Renewable Energy Dashboard by Diganto Chakraborty")
+# -------------------- CO₂ INTENSITY COMPARISON --------------------
+st.subheader("🌫️ CO₂ Intensity of Electricity Generation")
+co2_df = pd.DataFrame({
+    "Region": ["EU", "India", "US"],
+    "CO₂ Intensity (g/kWh)": [230, 680, 370]
+}).set_index("Region")
+st.bar_chart(co2_df)
+st.markdown("---")
 
+# -------------------- CORRELATION PLOT --------------------
+st.subheader("🔗 Correlation: Renewable Share vs Estimated CO₂ Emissions")
+cor_df = pd.DataFrame({
+    "Region": ["EU", "India", "US"],
+    "Renewable Share (%)": [24.5, 22.4, 24.2],
+    "CO₂ Emissions (Mt)": [2400, 2600, 4800]
+})
+fig4, ax4 = plt.subplots()
+ax4.scatter(cor_df["Renewable Share (%)"], cor_df["CO₂ Emissions (Mt)"])
+for i, txt in enumerate(cor_df["Region"]):
+    ax4.annotate(txt, (cor_df["Renewable Share (%)"][i], cor_df["CO₂ Emissions (Mt)"][i]))
+ax4.set_xlabel("Renewable Share (%)")
+ax4.set_ylabel("CO₂ Emissions (Mt)")
+ax4.set_title("Higher Renewable Share → Lower Emissions Trend")
+st.pyplot(fig4)
+st.markdown("---")
 
+# -------------------- DOWNLOAD SUMMARY --------------------
+if region != "ALL":
+    csv = data_dict[region].to_csv(index=False).encode("utf-8")
+    st.download_button(f"📥 Download {region} Data CSV", csv, file_name=f"{region}_data.csv", mime="text/csv")
+st.markdown("---")
 
+# -------------------- COUNTRY FACTS --------------------
+st.subheader("🌍 Quick Facts")
+facts = {
+    "EU": "🇪🇺 The EU added 57 GW of new solar capacity in 2023, led by Germany and Spain.",
+    "INDIA": "🇮🇳 India’s solar power share rose 26% YoY, with Rajasthan and Gujarat leading installations.",
+    "US": "🇺🇸 The U.S. generated 24% of its electricity from renewables in 2023, mainly wind and solar."
+}
+if region in facts:
+    st.info(facts[region])
+elif region == "ALL":
+    st.info("Global transition accelerating — Europe leads in policy, India in growth, US in scale.")
+st.markdown("---")
+
+# -------------------- CREDITS --------------------
+st.markdown("""
+---
+**Developed by [Diganto Chakraborty](https://github.com/diganto)**  
+Data sources: Eurostat, MNRE, EIA  
+© 2025 Renewable Energy Dashboard  
+""")
 
