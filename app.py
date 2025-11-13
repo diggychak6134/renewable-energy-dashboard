@@ -216,7 +216,9 @@ y = cor_df["CO₂ Emissions (Mt)"]
 slope, intercept = np.polyfit(x, y, 1)
 x_line = np.linspace(min(x)-1, max(x)+1, 100)
 y_line = slope * x_line + intercept
-ax4.plot(x_line, y_line, linestyle='--', color='white', linewidth=1)
+line_color = 'white' if dark_mode else 'black'
+ax4.plot(x_line, y_line, linestyle='--', color=line_color, linewidth=1)
+
 
 ax4.set_xlabel("Renewable Share (%)")
 ax4.set_ylabel("Total CO₂ Emissions (Mt)")
