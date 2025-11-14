@@ -70,6 +70,7 @@ if region == "ALL":
 
     # Display aggregated metrics
     st.subheader("📊 ALL — Aggregated Renewable Metrics (EU, India, US)")
+    st.caption("Combined overview showing average renewable share, total energy output, growth rates, and CO₂ savings across all major regions.")
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Avg Renewable Share (%)", f"{avg_share_all:.2f}")
     m2.metric("Total Energy (TWh est.)", f"{total_twh_all:.1f}")
@@ -95,6 +96,7 @@ if region != "ALL":
 
 # -------------------- GOAL SLIDER (per-region) --------------------
 st.subheader("🎯 Renewable Goal Progress")
+st.caption("Compare the region’s current renewable share with a user-defined 2030 target to visualize progress toward future sustainability goals.")
 goal_defaults = {"EU": 40, "INDIA": 30, "US": 35}
 if region != "ALL":
     goal = st.sidebar.slider(f"Set {region}'s 2030 renewable target (%)", 20, 60, goal_defaults.get(region, 40))
@@ -107,6 +109,7 @@ if region != "ALL":
 
 # -------------------- RENEWABLE TREND CHART --------------------
 st.subheader("📈 Renewable Energy Growth Trend")
+st.caption("Historical data showing how renewable energy adoption has evolved from 2014 to 2023 across selected regions.")
 fig, ax = plt.subplots(figsize=(8, 4))
 if region == "ALL":
     for country, df in data_dict.items():
@@ -123,6 +126,7 @@ st.pyplot(fig)
 
 # -------------------- FORECASTING (2024–2030) --------------------
 st.subheader("🔮 Forecast: Projected Renewable Share (2024–2030)")
+st.caption("Linear projection model estimating future renewable adoption based on historical trends.")
 def forecast(df):
     x = df["Year"].values
     y = df["Renewable Share (%)"].values
@@ -151,6 +155,7 @@ st.markdown("---")
 
 # -------------------- RENEWABLE MIX (per-region + ALL average) --------------------
 st.subheader("⚡ Renewable Energy Mix (2023)")
+st.caption("Distribution of renewable sources such as solar, wind, hydro, and others within the selected region.")
 mix_map = {
     "EU": {"Solar": 35, "Wind": 40, "Hydro": 20, "Biomass": 5},
     "INDIA": {"Solar": 50, "Wind": 30, "Hydro": 18, "Biomass": 2},
@@ -178,6 +183,7 @@ st.markdown("---")
 
 # -------------------- CO₂ INTENSITY COMPARISON --------------------
 st.subheader("🌫️ CO₂ Intensity of Electricity Generation")
+st.caption("Shows how much CO₂ is emitted per unit of electricity—reflecting how clean or carbon-heavy the power grid is.")
 co2_df = pd.DataFrame({
     "Region": ["EU", "India", "US"],
     "CO₂ Intensity (g/kWh)": [230, 680, 370]
@@ -187,6 +193,7 @@ st.markdown("---")
 
 # -------------------- CORRELATION PLOT --------------------
 st.subheader("🔗 Total CO₂ Emissions vs Renewable Share (National Scale)")
+st.caption("Illustrates how total national CO₂ emissions relate to renewable energy penetration, with a regression line highlighting overall trends.")
 
 cor_df = pd.DataFrame({
     "Region": ["EU", "India", "US"],
@@ -231,6 +238,7 @@ st.pyplot(fig4)
 # -------------------- MAP SECTION (same countries & scores) --------------------
 if show_map:
     st.subheader("🗺️ Renewable Energy Strength Map: Potential vs Deployment")
+    st.caption("Each marker represents a region's natural renewable potential and deployment strength, with composite scoring adjustable via slider.")
     st.caption("Interactive map showing natural potential, deployment index, and composite score (weighted).")
 
     data = pd.DataFrame({
@@ -263,8 +271,9 @@ if show_map:
     st.pydeck_chart(pdk.Deck(map_style=None, layers=[layer], initial_view_state=view_state, tooltip=tooltip))
     st.markdown(f"**Legend:** Colored circles indicate {view_option.lower()} (size = higher score).")
     st.markdown("---")
-st.subheader("📊 Countries Compared – Summary Table")
 #---------------------------COUNTRY COMPARISION SUMMARY---------------------------
+st.subheader("📊 Countries Compared – Summary Table")
+st.caption("Side-by-side comparison of renewable share, growth, emissions, and CO₂ intensity across regions.")
 summary_table = pd.DataFrame({
     "Region": ["EU", "India", "US"],
     "Latest Renewable Share (%)": [
@@ -287,6 +296,7 @@ st.dataframe(summary_table)
 
 # -------------------- DOWNLOAD SUMMARY --------------------
 st.subheader("📥 Download / Export")
+st.caption("Export renewable energy data for deeper offline analysis or academic use.")
 if region == "ALL":
     # prepare aggregated summary CSV
     summary = pd.DataFrame([
@@ -307,6 +317,7 @@ st.markdown("---")
 
 # -------------------- QUICK FACTS & INSIGHTS --------------------
 st.subheader("🌍 Quick Facts & Insights")
+st.caption("Concise region-specific highlights summarizing renewable energy performance and developments.")
 facts = {
     "EU": "🇪🇺 The EU added strong solar and wind capacity; Germany & Spain lead in deployments.",
     "INDIA": "🇮🇳 India’s solar rollout is fastest; Rajasthan, Gujarat and Tamil Nadu are major contributors.",
