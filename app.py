@@ -331,7 +331,7 @@ st.markdown("---")
 
 # -------------------- CREDITS --------------------
 st.markdown("""
-**Developed by [Diganto Chakraborty](https://github.com/diganto)**  
+**Developed by [Diganto Chakraborty](https://github.com/diggychak6134)**  
 Data sources: Eurostat, MNRE, EIA • © 2025 Renewable Energy Dashboard
 """)
 
