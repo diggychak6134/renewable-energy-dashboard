@@ -21,8 +21,7 @@ The dashboard includes a map-based visualization to represent regional renewable
 This visualization supports comparative regional analysis and helps identify areas with higher renewable energy potential.
 
 ## Example Visualization
-![Renewable Energy Map](<img width="1768" height="800" alt="image" src="https://github.com/user-attachments/assets/15c2a751-d28c-4f5a-b684-fa0bb1b1670c" />
-)
+![Renewable Energy Map](map.png)
 
 ## Technologies Used
 - Python
