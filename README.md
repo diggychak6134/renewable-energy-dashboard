@@ -11,6 +11,19 @@ This dashboard aggregates and presents renewable energy data through interactive
 - Dynamic charts and tables
 - User-friendly web interface
 
+## Spatial Analysis
+The dashboard includes a map-based visualization to represent regional renewable energy characteristics.
+
+- Circles indicate renewable resource availability across different regions
+- Additional markers represent supporting energy infrastructure
+- Circle size reflects a composite score derived from multiple parameters
+
+This visualization supports comparative regional analysis and helps identify areas with higher renewable energy potential.
+
+## Example Visualization
+![Renewable Energy Map](<img width="1768" height="800" alt="image" src="https://github.com/user-attachments/assets/15c2a751-d28c-4f5a-b684-fa0bb1b1670c" />
+)
+
 ## Technologies Used
 - Python
 - Streamlit
